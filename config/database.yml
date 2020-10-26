@@ -52,3 +52,4 @@ production:
   database: pictweet_new_production
   username: pictweet_new
   password: <%= ENV['PICTWEET5_DATABASE_PASSWORD'] %>
+
