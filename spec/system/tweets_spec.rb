@@ -12,10 +12,10 @@ RSpec.describe 'ツイート投稿', type: :system do
       visit new_user_session_path
       fill_in 'Email', with: @user.email
       fill_in 'Password', with: @user.password 
-      find('input[name="commi"]').click
+      find('input[name="commit"]').click
       expect(current_path).to eq root_path
       # 新規投稿ページへのリンクがあることを確認する
-      expect(page).to have_conten("新規登録")
+      expect(page).to have_content("投稿する")
       # 投稿ページに移動する
       visit new_tweet_path
       # フォームに情報を入力する
@@ -26,15 +26,15 @@ RSpec.describe 'ツイート投稿', type: :system do
         find('input[name="commit"]').click
       }.to change {Tweet.count}.by(1)
       # 投稿完了ページに遷移することを確認する
-      expect(current_path).to wq tweet_path
+      expect(current_path).to eq tweets_path
       # 「投稿が完了しました」の文字があることを確認する
       expect(page).to have_content("投稿が完了しました")
       # トップページに遷移する
       visit root_path
       # トップページには先ほど投稿した内容のツイートが存在することを確認する（画像）
-      expect(page).to have_selector ".content_post[style='bacground-image: url(#{@tweet_image});']"
+      expect(page).to have_selector ".content_post[style='background-image: url(#{@tweet_image});']"
       # トップページには先ほど投稿した内容のツイートが存在することを確認する（テキスト）
-      ecpect(page).to have_content(@tweet_text)
+      expect(page).to have_content(@tweet_text)
     end
   end
   context 'ツイート投稿ができないとき'do
@@ -128,13 +128,29 @@ RSpec.describe 'ツイート削除', type: :system do
   context 'ツイート削除ができるとき' do
     it 'ログインしたユーザーは自らが投稿したツイートの削除ができる' do
       # ツイート1を投稿したユーザーでログインする
+      visit new_user_session_path
+      fill_in 'Email', with: @tweet1.user.email
+      fill_in 'Password', with: @tweet1.user.password
+      find('input[name="commit"]').click
+      expect(current_path).to eq root_path
       # ツイート1に「削除」ボタンがあることを確認する
+      expect(
+        all(".more")[1].hover
+      ).to have_link "削除", href: tweet_path(@tweet1.id)
       # 投稿を削除するとレコードの数が1減ることを確認する
+      expect{
+        all(".more")[1].hover.find_link('削除', href: tweet_path(@tweet1.id)).click
+      }.to change {Tweet.count}.by(-1)
       # 削除完了画面に遷移したことを確認する
+      expect(current_path).to eq tweet_path(@tweet1.id)
       # 「削除が完了しました」の文字があることを確認する
+      expect(page).to have_content("削除が完了しました")
       # トップページに遷移する
+      visit root_path
       # トップページにはツイート1の内容が存在しないことを確認する（画像）
+      expect(page).to have_no_selector ".content_post[style='background-image: url(#{@tweet1.image});']"
       # トップページにはツイート1の内容が存在しないことを確認する（テキスト）
+      expect(page).to have_no_content(@tweet1.text)
     end
   end
   context 'ツイート削除ができないとき' do
