@@ -95,7 +95,15 @@ RSpec.describe 'ツイート編集', type: :system do
   context 'ツイート編集ができないとき' do
     it 'ログインしたユーザーは自分以外が投稿したツイートの編集画面には遷移できない' do
       # ツイート1を投稿したユーザーでログインする
+      visit new_user_session_path
+      fill_in 'Email', with: @tweet1.user.email
+      fill_in 'Password', with: @tweet1.user.password
+      find('input[name="commit"]').click
+      expect(current_path).to eq root_path
       # ツイート2に「編集」ボタンがないことを確認する
+      expect(
+        all(".more")[0].hover
+      ).to have_no_link '編集' ,href: edit_tweet_path(@tweet2.id)
     end
     it 'ログインしていないとツイートの編集画面には遷移できない' do
       # トップページにいる
